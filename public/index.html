@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Asura Chess by Ignitas</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="Guild Wars2, GW2, Ausra Chess">
+		<meta name="author" content="Ignitas">
+		<link href="http://rc.getbootstrap.com/assets/css/bootstrap.css" rel="stylesheet">
+		<style type="text/css">
+			.cell{
+				background-image: url(images/cell0.png);
+				width: 128px;
+				height: 128px;
+				border:1px solid black;
+				text-align: center;
+				float:left;
+				opacity:0.8;
+				filter:alpha(opacity=80);
+			}
+			.row{
+				clear:both;
+			}
+			#map{
+				background-image: url(https://d2vn94glaxzkz3.cloudfront.net/wp-content/uploads/wallpapers/GuildWars2-11-1920x1200.jpg);
+				-webkit-background-size: cover;
+				-moz-background-size: cover;
+				-o-background-size: cover;
+				background-size: cover;
+				position:relative;
+				left:50%;
+				margin-left: -428px;
+				padding: 88px 256px;
+				width: 384px;
+				height: 384px;
+			}
+			#options{
+				position:absolute;
+				left:666px;
+				top:88px;
+				opacity:0.8;
+				filter:alpha(opacity=80);
+			}
+		</style>
+		<script src="http://code.jquery.com/jquery-1.8.2.min.js" type="text/javascript"></script>
+		<script type="text/javascript" async>
+			var game;
+			$(function(){
+				game=new Game();
+				$("#gamebtn button").removeAttr("disabled");
+				
+				function mod(x,y){
+					var r=x%y;
+					if (r<0){
+						r+=y;
+					}
+					return r;
+				}
+				
+				function setCell(golem,x,y,o,hp){
+					if (golem===1 || !game || game.bot===0){
+						$('#cell'+x+y).css('background-image','url(images/cell'+golem+o+'.png)');
+					}
+					else {
+						$('#cell'+x+y).css('background-image','url(images/cell2b.png)');
+					}
+					$('#cell'+x+y).text(Math.floor(hp+0.5)+' hp');
+				}
+				
+				function clearCell(x,y){
+					$('#cell'+x+y).css('background-image','url(images/cell0.png)');
+					$('#cell'+x+y).text('');
+				}
+				
+				function victory(golem){
+					$('#gamebtn').hide();
+					if (golem===2 && game.bot>0){
+						$('#currentplayer').text('You were defeated by '+((game.bot===1)?'an easy':((game.bot===2)?'a normal':'an unbeatable'))+' bot! Try it again!');
+						$('#currentplayer').css('color','red');
+					}
+					else{
+						$('#currentplayer').text('Golem '+golem+' wins! Congratulation!');
+						$('#currentplayer').css('color','green');
+					}
+					$('#newgamediv').fadeIn();
+				}
+				
+				$('.newgame').click(function(){
+					$("#gamebtn button").removeAttr("disabled");
+					$('.cell').css('background-image','url(images/cell0.png)').text('');
+					$('#currentplayer').text('Current player: Golem 1');
+					$('#currentplayer').css('color','blue');
+					game=new Game();
+					$('#newgamediv').hide();
+					$('#gamebtn').fadeIn();
+				});
+				
+				function Game(){
+					this.g1=new Golem(1,0,0,2);setCell(1,0,0,2,100); //Golem1
+					this.g2=new Golem(2,2,2,0);setCell(2,2,2,0,100); //Golem2
+					this.turn=true; //true if golem1s turn, false if golem2s turn
+					this.bot=$('#usebot:checked').length===0?0:parseInt($('#botdif').val())
+					//pickups (under construction)
+					
+					this.turnLeft=function(){
+						(this.turn?this.g1:this.g2).turnLeft();
+					};
+					
+					this.turnRight=function(){
+						(this.turn?this.g1:this.g2).turnRight();
+					};
+					
+					this.moveForward=function(){
+						if ((this.turn?this.g1:this.g2).moveForward()){
+							this.skip();
+						}
+					};
+					
+					this.attack=function(){
+						var other=(this.turn?this.g2:this.g1);
+						if ((this.turn?this.g1:this.g2).canAttack(other)){
+							if (other.setDamange(100/3)){
+								setCell(other.id,other.x,other.y,other.o,other.hp);
+								this.skip();
+							}
+							else{
+								setCell(other.id,other.x,other.y,other.o,other.hp);
+							}
+						}
+					};
+					
+					this.skip=function(){
+						$("#gamebtn button").removeAttr("disabled");
+						this.turn=!this.turn;
+						$('#currentplayer').text('Current player: Golem '+(this.turn?'1':'2'));
+						$('#currentplayer').css('color',this.turn?'blue':'red');
+						if (!this.turn && this.bot>0){//unbeatable bot
+							$("#gamebtn button").attr("disabled", "disabled");
+							setTimeout(function(){game.runbot();},800);
+						}
+					};
+					
+					this.runbot=function(){
+						var dx=Math.abs(this.g1.x-this.g2.x);
+						var dy=Math.abs(this.g1.y-this.g2.y);
+							if ((dx+dy)%2===0){
+								if (this.bot===3){
+									setTimeout(function(){game.skip();},200);
+									return; //skip turn -> unbeatable
+								}// else bot perfekt turn now
+							}
+							if (dx+dy===1){
+								if (this.g1.setDamange(100/3)){
+									setCell(this.g1.id,this.g1.x,this.g1.y,this.g1.o,this.g1.hp);
+									setTimeout(function(){game.skip();},200);
+								}
+								else{
+									setCell(this.g1.id,this.g1.x,this.g1.y,this.g1.o,this.g1.hp);
+								}
+								return;
+							}
+							clearCell(this.g2.x,this.g2.y);
+							if (this.bot===1){ //easy bot with senseless turn
+								var or=[];
+								if (this.g2.x>0){or.push(3);}
+								if (this.g2.x<2){or.push(1);}
+								if (this.g2.y>0){or.push(0);}
+								if (this.g2.y<2){or.push(2);}
+								this.g2.o=or[Math.floor(Math.random()*or.length)];
+								this.g2.moveForward();
+							}
+							else{
+								if (dx>dy){
+									this.g2.x=(this.g1.x<this.g2.x)?this.g2.x-1:this.g2.x+1;
+								}
+								if (dx===dy){//normal bot unperfekt turn
+									if (dx===2){//start position
+										if (Math.random()>0.5){
+											this.g2.y=(this.g1.y<this.g2.y)?this.g2.y-1:this.g2.y+1;
+										}
+										else{
+											this.g2.x=(this.g1.x<this.g2.x)?this.g2.x-1:this.g2.x+1;
+										}
+									}
+									else{
+										if (this.g2.x==1 && this.g2.y==1){ //middle -> run away (random one of 2 possibility)
+											if (Math.random()>0.5){
+													this.g2.y=(this.g1.y<this.g2.y)?this.g2.y+1:this.g2.y-1;
+												}
+												else{
+													this.g2.x=(this.g1.x<this.g2.x)?this.g2.x+1:this.g2.x-1;
+												}
+										}
+										else {
+											if ((this.g2.x+this.g2.y)%2===0){//corner -> random attackable position
+												if (Math.random()>0.5){
+													this.g2.y=(this.g1.y<this.g2.y)?this.g2.y-1:this.g2.y+1;
+												}
+												else{
+													this.g2.x=(this.g1.x<this.g2.x)?this.g2.x-1:this.g2.x+1;
+												}
+											}
+											else{//edge -> run away (only one possibility)
+												if (this.g2.x!=1){
+													this.g2.y=(this.g1.y<this.g2.y)?this.g2.y+1:this.g2.y-1;
+												}
+												else{
+													this.g2.x=(this.g1.x<this.g2.x)?this.g2.x+1:this.g2.x-1;
+												}
+											}
+										}
+									}
+								}//end unperfekt normal bot turn
+								if(dx<dy){
+									this.g2.y=(this.g1.y<this.g2.y)?this.g2.y-1:this.g2.y+1;
+								}
+								setCell(this.g2.id,this.g2.x,this.g2.y,this.g2.o,this.g2.hp);
+							}
+							setTimeout(function(){game.skip();},200);
+					};
+				}// End of Game
+
+				function Golem(id,x,y,o){
+					this.id=id; //1 for Golem 1 and 2 for Golem 2
+					this.x=x; //x position of golem 0..2
+					this.y=y; //y position of golem 0..2
+					this.o=o; //oriantation of golem 0..3 (0=north,1=east,2=south,3=west)
+					this.hp=100; //health point of the golem 0..100
+					
+					this.turnLeft=function(){
+						this.o=mod(this.o-1,4);
+						setCell(this.id,this.x,this.y,this.o,this.hp);
+					};
+					
+					this.turnRight=function(){
+						this.o=mod(this.o+1,4);
+						setCell(this.id,this.x,this.y,this.o,this.hp);
+					};
+					
+					this.canMove=function(){
+						if (this.canAttack((this.id===1)?game.g2:game.g1)){
+							return false;
+						}
+						switch(this.o){
+							case 0: return this.y>0;
+							case 1: return this.x<2;
+							case 2: return this.y<2;
+							case 3: return this.x>0;
+							default: console.warn('illigal oriantation: '+this.o); return false;        
+						}
+					};
+					
+					this.moveForward=function(){
+						if (!this.canMove()){
+							return false;
+						}
+						clearCell(this.x,this.y);
+						switch(this.o){
+							case 0: this.y--; break;
+							case 1: this.x++; break;
+							case 2: this.y++; break;
+							case 3: this.x--; break;
+							default: console.warn('illigal oriantation: '+this.o); setCell(this.id,this.x,this.y,this.o,this.hp); return false;        
+						}
+						setCell(this.id,this.x,this.y,this.o,this.hp);
+						return true;
+					};
+					
+					this.canAttack=function(other){
+						if (this.o%2===0){ //vertical
+							return this.x===other.x && this.y===other.y-this.o+1;
+						}
+						else{ //horizontal
+							return this.y===other.y && this.x-this.o+2===other.x;
+						}
+					};
+					
+					this.setDamange=function(dmg){
+						this.hp-=dmg;
+						if (this.hp<0.00000001){
+							victory(this.id===1?2:1);
+							return false;
+						}
+						return true;
+					};
+				}// End of Golem
+			});
+		</script>
+	</head>
+	<body>
+		<h1 align="center">Asura Chess Game by Ignitas </h1>
+
+		<div id="map">
+			<div class="well well-small" id="options">
+				<h4 align="center">Options</h4>
+					<label class="checkbox"><input type="checkbox" id="usebot"> use bot for golem 2</label>
+					<label class="select">difficulty: <select style="width:110px;" id="botdif"><option value="1">easy</option><option value="2">normal</option><option value="3">unbeatable</option></select></label>
+					<label class="checkbox"><input type="checkbox" disabled> random pickups</label>
+					<span class="help-block">(under development)</span>
+					<button class="btn btn-block newgame">Restart game ...</button>
+			</div>
+			<div class="row">
+				<div class="cell" id="cell00"></div>
+				<div class="cell" id="cell10"></div>
+				<div class="cell" id="cell20"></div>
+			</div>
+			<div class="row">
+				<div class="cell" id="cell01"></div>
+				<div class="cell" id="cell11"></div>
+				<div class="cell" id="cell21"></div>
+			</div>
+			<div class="row">
+				<div class="cell" id="cell02"></div>
+				<div class="cell" id="cell12"></div>
+				<div class="cell" id="cell22"></div>
+			</div>
+		</div>
+
+		<h2 align="center" id="currentplayer" style="color: blue;">Current player: Golem 1</span></h2>
+		<div class="form-actions" id="gamebtn" align="center">
+			<button class="btn btn-large" onclick="game.turnLeft()">Turn left</button>
+			<button class="btn btn-primary btn-large" onclick="game.moveForward()">Move forward</button>
+			<button class="btn btn-large" onclick="game.turnRight()">Turn right</button>
+			<button class="btn btn-primary btn-large" onclick="game.attack()">Attack enemy</button>
+			<button class="btn btn-warning btn-large" onclick="game.skip()">Skip turn</button>
+		</div>
+		<div class="form-actions" align="center" id="newgamediv" style="display:none;"><button class="btn btn-primary btn-large btn-block newgame">Start new game...</button></div>
+	</body>
+</html>
