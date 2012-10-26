@@ -135,7 +135,7 @@
 					if ($(this).val()=='en'){
 						localize({});
 					}
-					$.getJSON('js/'+$(this).val()+'.json', function(data) {
+					$.getJSON('js/'$(this).val()+'.json', function(data) {
 						localize(eval(data));
 					});
 				});
