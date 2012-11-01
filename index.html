@@ -9,7 +9,7 @@
 		<link rel="shortcut icon" href="images/icon.png">
 		<link href="http://rc.getbootstrap.com/assets/css/bootstrap.css" rel="stylesheet">
 		<style type="text/css">
-			@media (min-width: 1280px){
+			@media (min-width: 900px){
 				body{
 					background-image: url(images/body.jpg);
 					background-repeat: no-repeat;
@@ -24,33 +24,27 @@
 				text-align: center;
 			}
 			.gamebtn{
-				width: 200px;
+				width: 193px;
 			}
 			.cell{
 				background-image: url(images/default.png);
-				width: 128px;
-				height: 128px;
 				border:1px solid black;
 				text-align: center;
 				float:left;
-				opacity:0.8;
-				filter:alpha(opacity=80);
+				opacity:0.75;
+				filter:alpha(opacity=75);
 			}
 			.row{
 				clear:both;
 			}
 			#map{
 				background-image: url(images/asura1.jpg);
-				-webkit-background-size: cover;
-				-moz-background-size: cover;
-				-o-background-size: cover;
-				background-size: cover;
 				position:absolute;
 				left:50%;
 				top:50%;
-				margin-left: -449px;
+				margin-left: -450px;
 				margin-top: -345px;
-				padding: 88px 256px;
+				padding: 87px 256px;
 				width: 386px;
 				height: 386px;
 				border: 1px solid rgba(0, 0, 0, 1);
@@ -64,12 +58,99 @@
 				opacity:0.8;
 				filter:alpha(opacity=80);
 			}
+			#option-show{
+				position:absolute;
+				right:0px;
+				top:0px;
+				opacity:0.8;
+				filter:alpha(opacity=80);
+			}
+			.progress{
+				heigth: 15px;
+			}
+			.navbar select{
+				height: 26px;
+				padding: 2px 4px;
+				color: #CCCCCC;
+				background-color: #515151;
+			}
+			.form-actions{
+				bottom: 40px;
+				padding-top: 0px;
+			}
+			
+			@media (max-width: 1023px){
+				.gamebtn{
+					height: 64px;
+					width: 19%;
+					min-width: 80px;
+				}
+				#map{
+					margin-top: -355px;
+				}
+			}
+			
+			@media (max-width: 900px){
+				#map{
+					padding: 87px 352px 87px 160px;
+				}
+				#options{
+					left: 542px;
+				}
+			}
+			
+			@media (max-width: 640px){
+				#map{
+					background-image: none;
+					position:static;
+					margin: 0;
+					padding: 0 0 55px;
+					width: 100%;
+					height: 386px;
+					border: none;
+					box-shadow: none;
+				}
+				.cell{
+					opacity:1.0;
+					filter:alpha(opacity=100);
+				}
+				.row{
+					margin: 0;
+				}
+				#options{
+					position:static;
+					opacity:1.0;
+					filter:alpha(opacity=100);
+					width: 95%;
+					display: none;
+				}
+				#option-show{
+					position:static;
+					opacity:1.0;
+					filter:alpha(opacity=100);
+					width: 100%;
+					display: inherit;
+				}
+				.navbar.navbar-fixed-bottom{
+					display:none;
+				}
+				.form-actions{
+					bottom: 0px;
+				}
+				.gamebtn{
+					margin-top: 5px;
+				}
+			}
 		</style>
 		<script src="http://code.jquery.com/jquery-1.8.2.min.js" type="text/javascript"></script>
+		<script src="js/jquery.cookie.min.js" type="text/javascript"></script>
 		<script type="text/javascript" async>
 			var game;
 			var timeout;
 			$(function(){
+				createGrid(3);
+				$('#usebot').attr('checked', false);
+				$("#gridsize").val('3');
 				game=new Game();
 				$(".gamebtn").removeAttr("disabled");
 				
@@ -81,15 +162,49 @@
 					return r;
 				}
 				
-				function setCell(golem,x,y,o,hp){
+				function createGrid(size){
+					if ($("#grid").data('size')==size) return;
+					s='';
+					for (var i=0;i<size;i++){
+						s+='<div class="row">';
+						for (var j=0;j<size;j++){
+							s+='<div class="cell" id="cell'+j+''+i+'"></div>'
+						}
+						s+='</div>';
+					}
+					$("#grid").html(s);
+					$("#grid").data('size',size);
+					if ($('#map').css('position')=="absolute"){
+						$(".cell").width(384/size).height(384/size);
+						$(".cell").css('background-size',1536/size).css('-moz-background-size',1536/size).css('-o-background-size',1536/size).css('-webkit-background-size',1536/size);
+					}
+					else{
+						$(".cell").width(Math.floor(98/size)+'%').height($(".cell").width());
+						$(".cell").css('background-size',$(".cell").width()*4).css('-moz-background-size',$(".cell").width()*4).css('-o-background-size',$(".cell").width()*4).css('-webkit-background-size',$(".cell").width()*4);
+					}
+					$(".progress").height(Math.floor(50/size));
+				}
+				
+				function setCell(golem,x,y,o,hp,s){
 					if (golem===1 || !game || game.bot===0){
-						$('#cell'+x+y).css('background-position',(o*-128)+'px '+(golem*-128)+'px');
+						if ($('#map').css('position')=="absolute"){
+							$('#cell'+x+y).css('background-position',(o*-384/s)+'px '+(golem*-384/s)+'px');
+						}
+						else{
+							$('#cell'+x+y).css('background-position',(o*-$(".cell").width())+'px '+(golem*-$(".cell").width())+'px');
+						}
 					}
 					else {
-						$('#cell'+x+y).css('background-position','-128px 0px');
+						if ($('#map').css('position')=="absolute"){
+							$('#cell'+x+y).css('background-position',(-384/s)+'px 0px');
+						}
+						else{
+							$('#cell'+x+y).css('background-position',(-$(".cell").width())+'px 0px');
+						}
 					}
 					var rhp=Math.floor(hp+0.5);
-					$('#cell'+x+y).html('<div class="progress" style="margin: 5px 8px 0px;height:15px;"><div class="bar bar-success" style="width:'+rhp+'%;"></div><div class="bar bar-danger" style="width:'+(100-rhp)+'%;"></div></div>');
+					$('#cell'+x+y).html('<div class="progress" style="margin: 5px 8px 0px;"><div class="bar bar-success" style="width:'+rhp+'%;"></div><div class="bar bar-danger" style="width:'+(100-rhp)+'%;"></div></div>');
+					$(".progress").height(Math.floor(50/s));
 				}
 				
 				function clearCell(x,y){
@@ -109,7 +224,22 @@
 					$('.newgame').fadeIn();
 				}
 				
+				$('#option-show').click(function(){
+					$('#options').fadeIn();
+					$('#option-show').fadeOut();
+				});
+				
+				$('#option-hide').click(function(){
+					$('#options').fadeOut();
+					$('#option-show').fadeIn();
+				});
+				
+				$('.need-restart').change(function(){
+					$('a.newgame').addClass('btn-primary');
+				});
+				
 				$('.newgame').click(function(){
+					$('a.newgame').removeClass('btn-primary');
 					clearTimeout(timeout);
 					$(".gamebtn").removeAttr("disabled");
 					$('.cell').css('background-position','0px 0px').html('');
@@ -123,11 +253,13 @@
 				$("#backselect").val('asura1');
 				$('#backselect').change(function(){
 					$('#map').css('background-image','url(images/'+$(this).val()+'.jpg)');
+					setCookie();
 				});
 				
 				$("#textureselect").val('default');
 				$('#textureselect').change(function(){
 					$('.cell').css('background-image','url(images/'+$(this).val()+'.png)');
+					setCookie();
 				});
 				
 				$("#langselect").val('en');
@@ -138,36 +270,46 @@
 					$.getJSON('js/'+$(this).val()+'.json', function(data) {
 						localize(eval(data));
 					});
+					setCookie();
 				});
-				$('#usebot').attr('checked', false);
+				
+				var cookie=$.cookie('asura-chess');
+				if (cookie!=null){
+					$("#backselect").val(cookie.split('|')[0]);$("#backselect").change();
+					$("#textureselect").val(cookie.split('|')[1]);$("#textureselect").change();
+					$("#langselect").val(cookie.split('|')[2]);$("#langselect").change();
+				}
+				
+				function setCookie(){
+					$.cookie('asura-chess',$("#backselect").val()+'|'+$("#textureselect").val()+'|'+$("#langselect").val(),{expires:9999});
+				}
 				
 				$("body").keypress(function(event){
-					if ($(".gamebtn:disabled").length==0){
-						if (event.which==49){
-							game.turnLeft();
-						}
-						if (event.which==50){
-							game.moveForward();
-						}
-						if (event.which==51){
-							game.turnRight();
-						}
-						if (event.which==52){
-							game.attack();
-						}
-						if (event.which==53){
-							game.skip();
-						}
+					if (!game.turn && game.bot>0) return;
+					if (event.which==49){
+						game.turnLeft();
+					}
+					if (event.which==50){
+						game.moveForward();
+					}
+					if (event.which==51){
+						game.turnRight();
+					}
+					if (event.which==52){
+						game.attack();
+					}
+					if (event.which==53){
+						game.skip();
 					}
 				});
 
 				
 				function localize(data){
 					$('.localized').each(function(){
-						var oldtext=$(this).text();
+						var oldtext=($(this).data('oriloc')==null)?$(this).text():$(this).data('oriloc');
 						if (data[oldtext]!=null){
-							$(this).data('oriloc',oldtext);
 							$(this).text(data[oldtext]);
+							$(this).data('oriloc',oldtext);
 						}
 						else{
 							if ($(this).data('oriloc')!=null){
@@ -178,9 +320,11 @@
 				}
 				
 				function Game(){
-					this.bot=$('#usebot:checked').length===0?0:parseInt($('#botdif').val())
-					this.g1=new Golem(1,0,0,2);setCell(1,0,0,2,100); //Golem1
-					this.g2=new Golem(2,2,2,0);setCell(2,2,2,0,100); //Golem2
+					this.bot=$('#usebot:checked').length===0?0:parseInt($('#botdif').val());
+					this.gridsize=parseInt($("#gridsize").val());
+					createGrid(this.gridsize);
+					this.g1=new Golem(1,0,0,2);setCell(1,0,0,2,100,this.gridsize); //Golem1
+					this.g2=new Golem(2,this.gridsize-1,this.gridsize-1,0);setCell(2,this.gridsize-1,this.gridsize-1,0,100,this.gridsize); //Golem2
 					this.turn=true; //true if golem1s turn, false if golem2s turn
 					//pickups (under construction)
 					
@@ -202,11 +346,11 @@
 						var other=(this.turn?this.g2:this.g1);
 						if ((this.turn?this.g1:this.g2).canAttack(other)){
 							if (other.setDamange(100/3)){
-								setCell(other.id,other.x,other.y,other.o,other.hp);
+								setCell(other.id,other.x,other.y,other.o,other.hp,this.gridsize);
 								this.skip();
 							}
 							else{
-								setCell(other.id,other.x,other.y,other.o,other.hp);
+								setCell(other.id,other.x,other.y,other.o,other.hp,this.gridsize);
 							}
 						}
 					};
@@ -216,7 +360,12 @@
 						this.turn=!this.turn;
 						$('#currentplayer').text('Current player: Golem '+(this.turn?'1':((this.bot===0)?'2':'2 (bot)')));
 						$('#currentplayer').css('color',this.turn?'blue':'red');
-						if (!this.turn && this.bot>0){//unbeatable bot
+						var bot=$('#usebot:checked').length===0?0:parseInt($('#botdif').val());//Check for Setting updates
+						if (this.bot!=bot){
+							this.bot=bot;
+							setCell(this.g2.id,this.g2.x,this.g2.y,this.g2.o,this.g2.hp,this.gridsize);
+						}
+						if (!this.turn && this.bot>0){//bots turn
 							$(".gamebtn").attr("disabled", "disabled");
 							timeout=setTimeout(function(){game.runbot();},800);
 						}
@@ -225,98 +374,109 @@
 					this.runbot=function(){
 						var dx=Math.abs(this.g1.x-this.g2.x);
 						var dy=Math.abs(this.g1.y-this.g2.y);
-							if ((dx+dy)%2===0){
-								if (this.bot===3){
-									timeout=setTimeout(function(){game.skip();},200);
-									return; //skip turn -> unbeatable
-								}// else bot perfekt turn now
-							}
-							if (dx+dy===1){
-								if (this.g1.setDamange(100/3)){
-									setCell(this.g1.id,this.g1.x,this.g1.y,this.g1.o,this.g1.hp);
-									timeout=setTimeout(function(){game.skip();},200);
-								}
-								else{
-									setCell(this.g1.id,this.g1.x,this.g1.y,this.g1.o,this.g1.hp);
-								}
-								return;
-							}
-							clearCell(this.g2.x,this.g2.y);
-							if (this.bot===1){ //easy bot with senseless turn
-								var or=[];
-								if (this.g2.x>0){or.push(3);}
-								if (this.g2.x<2){or.push(1);}
-								if (this.g2.y>0){or.push(0);}
-								if (this.g2.y<2){or.push(2);}
-								this.g2.o=or[Math.floor(Math.random()*or.length)];
-								this.g2.moveForward();
+						if ((dx+dy)%2===0){
+							if (this.bot===3){
+								timeout=setTimeout(function(){game.skip();},200);
+								return; //skip turn -> unbeatable
+							}// else bot perfekt turn now
+						}
+						if (dx+dy===1){
+							if (this.g1.setDamange(100/3)){
+								setCell(this.g1.id,this.g1.x,this.g1.y,this.g1.o,this.g1.hp,this.gridsize);
+								timeout=setTimeout(function(){game.skip();},200);
 							}
 							else{
-								if (dx>dy){
-									this.g2.x=(this.g1.x<this.g2.x)?this.g2.x-1:this.g2.x+1;
-								}
-								if (dx===dy){//normal bot unperfekt turn
-									if (dx===2){//start position
+								setCell(this.g1.id,this.g1.x,this.g1.y,this.g1.o,this.g1.hp,this.gridsize);
+							}
+							return;
+						}
+						clearCell(this.g2.x,this.g2.y);
+						if (this.bot===1){ //easy bot with senseless turn
+							var or=[];
+							if (this.g2.x>0){or.push(3);}
+							if (this.g2.x<game.gridsize-1){or.push(1);}
+							if (this.g2.y>0){or.push(0);}
+							if (this.g2.y<game.gridsize-1){or.push(2);}
+							this.g2.o=or[Math.floor(Math.random()*or.length)];
+							this.g2.moveForward();
+						}
+						else{
+							if (dx>dy && dx+dy>2){
+								this.g2.x=(this.g1.x<this.g2.x)?this.g2.x-1:this.g2.x+1;
+							}
+							if(dx<dy && dx+dy>2){
+								this.g2.y=(this.g1.y<this.g2.y)?this.g2.y-1:this.g2.y+1;
+							}
+							if (dx===dy){//normal bot unperfekt turn
+								if (dx===1){
+									if (this.g2.x!=0 && this.g2.y!=0 && this.g2.x!=game.gridsize-1 && this.g2.y!=game.gridsize-1){ //middle -> run away (random one of 2 possibility)
 										if (Math.random()>0.5){
-											this.g2.y=(this.g1.y<this.g2.y)?this.g2.y-1:this.g2.y+1;
+											this.g2.y=(this.g1.y<this.g2.y)?this.g2.y+1:this.g2.y-1;
 										}
 										else{
-											this.g2.x=(this.g1.x<this.g2.x)?this.g2.x-1:this.g2.x+1;
+											this.g2.x=(this.g1.x<this.g2.x)?this.g2.x+1:this.g2.x-1;
 										}
+									}
+									else {
+										if ((this.g2.x===0 || this.g2.x===game.gridsize-1) && (this.g2.y===0 || this.g2.y===game.gridsize-1)){//corner -> random attackable position
+											if (Math.random()>0.5){
+												this.g2.y=(this.g1.y<this.g2.y)?this.g2.y-1:this.g2.y+1;
+											}
+											else{
+												this.g2.x=(this.g1.x<this.g2.x)?this.g2.x-1:this.g2.x+1;
+											}
+										}
+										else{//edge -> run away (only one possibility)
+											if (this.g2.x===0 || this.g2.x===game.gridsize-1){
+												this.g2.y=(this.g1.y<this.g2.y)?this.g2.y+1:this.g2.y-1;
+											}
+											else{
+												this.g2.x=(this.g1.x<this.g2.x)?this.g2.x+1:this.g2.x-1;
+											}
+										}
+									}
+								}
+								else{
+									if (Math.random()>0.5){
+										this.g2.y=(this.g1.y<this.g2.y)?this.g2.y-1:this.g2.y+1;
 									}
 									else{
-										if (this.g2.x==1 && this.g2.y==1){ //middle -> run away (random one of 2 possibility)
-											if (Math.random()>0.5){
-													this.g2.y=(this.g1.y<this.g2.y)?this.g2.y+1:this.g2.y-1;
-												}
-												else{
-													this.g2.x=(this.g1.x<this.g2.x)?this.g2.x+1:this.g2.x-1;
-												}
-										}
-										else {
-											if ((this.g2.x+this.g2.y)%2===0){//corner -> random attackable position
-												if (Math.random()>0.5){
-													this.g2.y=(this.g1.y<this.g2.y)?this.g2.y-1:this.g2.y+1;
-												}
-												else{
-													this.g2.x=(this.g1.x<this.g2.x)?this.g2.x-1:this.g2.x+1;
-												}
-											}
-											else{//edge -> run away (only one possibility)
-												if (this.g2.x!=1){
-													this.g2.y=(this.g1.y<this.g2.y)?this.g2.y+1:this.g2.y-1;
-												}
-												else{
-													this.g2.x=(this.g1.x<this.g2.x)?this.g2.x+1:this.g2.x-1;
-												}
-											}
-										}
+										this.g2.x=(this.g1.x<this.g2.x)?this.g2.x-1:this.g2.x+1;
 									}
-								}//end unperfekt normal bot turn
-								if(dx<dy){
-									this.g2.y=(this.g1.y<this.g2.y)?this.g2.y-1:this.g2.y+1;
 								}
-								setCell(this.g2.id,this.g2.x,this.g2.y,this.g2.o,this.g2.hp);
+							}//end unperfekt normal bot turn
+							if ((dx===2 && dy===0) || (dx===0 && dy===2)){
+								var or=[];
+								var nor=(dx===2)?((this.g1.x>this.g2.x)?1:3):((this.g1.y>this.g2.y)?2:0)
+								if (this.g2.x>0 && nor!=3){or.push(3);}
+								if (this.g2.x<game.gridsize-1 && nor!=1){or.push(1);}
+								if (this.g2.y>0 && nor!=0){or.push(0);}
+								if (this.g2.y<game.gridsize-1 && nor!=2){or.push(2);}
+								this.g2.o=or[Math.floor(Math.random()*or.length)];
+								console.log(this.g2.o);
+								this.g2.moveForward();
 							}
-							timeout=setTimeout(function(){game.skip();},200);
+							setCell(this.g2.id,this.g2.x,this.g2.y,this.g2.o,this.g2.hp,this.gridsize);
+						}
+						timeout=setTimeout(function(){game.skip();},200);
 					};
 				}// End of Game
 
 				function Golem(id,x,y,o){
 					this.id=id; //1 for Golem 1 and 2 for Golem 2
-					this.x=x; //x position of golem 0..2
-					this.y=y; //y position of golem 0..2
+					this.x=x; //x position of golem 0..game.gridsize-1
+					this.y=y; //y position of golem 0..game.gridsize-1
 					this.o=o; //oriantation of golem 0..3 (0=north,1=east,2=south,3=west)
 					this.hp=100; //health point of the golem 0..100
 					
 					this.turnLeft=function(){
 						this.o=mod(this.o-1,4);
-						setCell(this.id,this.x,this.y,this.o,this.hp);
+						setCell(this.id,this.x,this.y,this.o,this.hp,game.gridsize);
 					};
 					
 					this.turnRight=function(){
 						this.o=mod(this.o+1,4);
-						setCell(this.id,this.x,this.y,this.o,this.hp);
+						setCell(this.id,this.x,this.y,this.o,this.hp,game.gridsize);
 					};
 					
 					this.canMove=function(){
@@ -325,8 +485,8 @@
 						}
 						switch(this.o){
 							case 0: return this.y>0;
-							case 1: return this.x<2;
-							case 2: return this.y<2;
+							case 1: return this.x<game.gridsize-1;
+							case 2: return this.y<game.gridsize-1;
 							case 3: return this.x>0;
 							default: console.warn('illigal oriantation: '+this.o); return false;        
 						}
@@ -342,9 +502,9 @@
 							case 1: this.x++; break;
 							case 2: this.y++; break;
 							case 3: this.x--; break;
-							default: console.warn('illigal oriantation: '+this.o); setCell(this.id,this.x,this.y,this.o,this.hp); return false;        
+							default: console.warn('illigal oriantation: '+this.o); setCell(this.id,this.x,this.y,this.o,this.hp,game.gridsize); return false;        
 						}
-						setCell(this.id,this.x,this.y,this.o,this.hp);
+						setCell(this.id,this.x,this.y,this.o,this.hp,game.gridsize);
 						return true;
 					};
 					
@@ -376,13 +536,16 @@
 				<a class="brand" href="#" style="margin-left: 10px;padding: 0px 20px;"><img height="64" src="images/icon.png" style="margin-right:5px;"> <span class="localized">Asura Chess by Ignitas<span></a>
 					<ul class="nav pull-right" style="margin-right: 30px;">
 						<li class="navbar-text"><span class="localized">Background:</span> 
-							<select id="backselect" style="margin-bottom:0px;width:100px;">
-								<option value="asura1" selected>Asura 1</option>
-								<option value="asura2">Asura 2</option>
-								<option value="asura3">Asura 3</option>
-								<option value="castle">Castle</option>
-								<option value="zhaitan">Zhaitan</option>
-								<option value="ascalon">Ascalon</option>					
+							<select id="backselect" style="margin-bottom:0px;width:145px;">
+								<option value="asura1" selected>Asura 1</option><option value="asura2">Asura 2</option><option value="asura3">Asura 3</option><option value="ascalon">Ascalon</option>
+								<option value="broken_ring">Broken Ring</option><option value="caithe1">Caithe 1</option><option value="caithe2">Caithe 2</option><option value="castle">Castle</option>
+								<option value="charr">Charr</option><option value="denravi">Denravi</option><option value="divinitys_garden">Divinitys Garden</option>
+								<option value="divinitys_reach1">Divinitys Reach 1</option><option value="divinitys_reach2">Divinitys Reach 2</option><option value="dragon_alley">Dragon Alley</option>
+								<option value="dragons_hand">Dragons Hand</option><option value="dragons_head">Dragons Head</option><option value="great_wall">Great Wall</option>
+								<option value="iceberg">Iceberg</option><option value="leviathan">Leviathan</option><option value="lions_arches">Lions Arches</option><option value="logan">Logan</option>
+								<option value="night_garden">Night Garden</option><option value="norn">Norn</option><option value="ranger">Ranger</option><option value="riven_earth">Riven Earth</option>
+								<option value="rytlock1">Rytlock 1</option><option value="rytlock2">Rytlock 2</option><option value="shatterer">Shatterer</option><option value="swamp">Swamp</option>
+								<option value="undead">Undead</option><option value="valley_of_gods">Valley of Gods</option><option value="valley_ruins">Valley Ruins</option><option value="zhaitan">Zhaitan</option>					
 							</select>
 						</li>
 						<li class="divider-vertical"></li>
@@ -404,58 +567,75 @@
 	</div>
 
 	<div id="map">
+		<button class="btn hide" id="option-show"><i class="icon-cog"></i></button>
 		<div class="well well-small" id="options">
+			<button type="button" class="close" data-dismiss="alert" style="margin-top:-5px;" id="option-hide">&times;</button>
 			<h4 style="text-align:center;" class="localized">Options</h4>
 				<label class="checkbox"><input type="checkbox" id="usebot"> <span class="localized">use bot for golem 2</span></label>
 				<label class="select"><span class="localized">difficulty:</span> <select style="width:120px;" id="botdif"><option value="1" class="localized">easy</option><option value="2" class="localized">normal</option><option value="3" class="localized">unbeatable</option></select></label>
-				<label class="checkbox"><input type="checkbox" disabled> <span class="localized">random pickups</span></label>
+				<label class="checkbox"><input type="checkbox" class="need-restart" disabled> <span class="localized">random pickups</span></label>
 				<span class="help-block localized">(under development)</span>
+				<label class="select"><span class="localized">map grid size:</span> <select style="width:100px;" id="gridsize" class="need-restart"><option value="3">3 x 3</option><option value="4">4 x 4</option><option value="5">5 x 5</option><option value="6">6 x 6</option></select></label>
 				<a class="btn btn-block newgame localized">Restart game ...</a>
 		</div>
-		<div class="row">
-			<div class="cell" id="cell00"></div>
-			<div class="cell" id="cell10"></div>
-			<div class="cell" id="cell20"></div>
-		</div>
-		<div class="row">
-			<div class="cell" id="cell01"></div>
-			<div class="cell" id="cell11"></div>
-			<div class="cell" id="cell21"></div>
-		</div>
-		<div class="row">
-			<div class="cell" id="cell02"></div>
-			<div class="cell" id="cell12"></div>
-			<div class="cell" id="cell22"></div>
+		<div id="grid" data-size="0">
+			<div class="row">
+				<div class="cell" id="cell00"></div>
+				<div class="cell" id="cell10"></div>
+				<div class="cell" id="cell20"></div>
+			</div>
+			<div class="row">
+				<div class="cell" id="cell01"></div>
+				<div class="cell" id="cell11"></div>
+				<div class="cell" id="cell21"></div>
+			</div>
+			<div class="row">
+				<div class="cell" id="cell02"></div>
+				<div class="cell" id="cell12"></div>
+				<div class="cell" id="cell22"></div>
+			</div>
 		</div>
 	</div>
 
-	<div class="form-actions navbar-fixed-bottom" style="bottom:40px;padding-top: 0px;">
+	<div class="form-actions navbar-fixed-bottom">
 		<h3 id="currentplayer" style="color: blue;text-align:center;">Current player: Golem 1</span></h3>
-		<button class="btn btn-large gamebtn localized" onclick="game.turnLeft()">Turn left</button>
-		<button class="btn btn-primary btn-large gamebtn localized" onclick="game.moveForward()">Move forward</button>
-		<button class="btn btn-large gamebtn localized" onclick="game.turnRight()">Turn right</button>
-		<button class="btn btn-primary btn-large gamebtn localized" onclick="game.attack()">Attack enemy</button>
-		<button class="btn btn-warning btn-large gamebtn localized" onclick="game.skip()">Skip turn</button>
+		<button class="btn btn-large gamebtn localized" onclick="if (game.turn || game.bot===0){game.turnLeft();}">Turn left</button>
+		<button class="btn btn-primary btn-large gamebtn localized" onclick="if (game.turn || game.bot===0){game.moveForward();}">Move forward</button>
+		<button class="btn btn-large gamebtn localized" onclick="if (game.turn || game.bot===0){game.turnRight();}">Turn right</button>
+		<button class="btn btn-primary btn-large gamebtn localized" onclick="if (game.turn || game.bot===0){game.attack();}">Attack enemy</button>
+		<button class="btn btn-warning btn-large gamebtn localized" onclick="if (game.turn || game.bot===0){game.skip();}">Skip turn</button>
 		<button class="btn btn-primary btn-large btn-block newgame localized" style="display:none;">Start new game ...</button>
 	</div>
 	
 	<div class="navbar navbar-inverse navbar-fixed-bottom">
 		<div class="navbar-inner">
-			<p class="navbar-text" style="text-align:center;"><span class="localized">Game idea and concept art from</span> <a href="http://www.guildwars2.com/">Guild Wars 2</a>: <span title="&copy; 2011 ArenaNet, Inc. All rights reserved. NCsoft, the interlocking NC logo, ArenaNet, Arena.net, Guild Wars, Guild Wars Factions, Factions, Guild Wars Nightfall, Nightfall, Guild Wars: Eye of the North, Guild Wars Eye of the North, Eye of the North, Guild Wars 2, and all associated logos and designs are trademarks or registered trademarks of NCsoft Corporation. All other trademarks are the property of their respective owners.">&copy; 2011 ArenaNet, Inc. All rights reserved.</span>  <span class="divider-vertical"></span>  <span class="localized">web programming:</span> <a href="http://forum-de.guildwars2.com/members/Ignitas-9573">Ignitas</a></p>
+			<ul class="nav pull-left" style="z-index:2;">
+				<li><a href="https://github.com/chrmoritz/asura-chess" title="Don't hesitate to contribute! ;)">Source code</a></li>
+				<li class="divider-vertical"></li>
+				<li><a href="https://github.com/chrmoritz/asura-chess/issues">Issue Tracker</a></li>
+				<li class="divider-vertical"></li>
+			</ul>
+			<ul class="nav pull-right" style="z-index:2;">
+				<li class="divider-vertical"></li>
+				<li><a>Version: 0.2</a></li>
+				<li class="divider-vertical"></li>
+				<li><a href="https://forum-en.guildwars2.com/forum/community/fangen/Game-Asura-Chess-v-0-1" title="Don't hesitate to provide Feedback! ;)">GW2-Forum-Thread</a></li>
+			</ul>
+			<p class="navbar-text" style="text-align:center;font-size:80%;position:absolute;width:100%;z-index:1;"><span class="localized">Game idea and concept art from</span> <a href="http://www.guildwars2.com/">Guild Wars 2</a> <span title="&copy; 2011 ArenaNet, Inc. All rights reserved. NCsoft, the interlocking NC logo, ArenaNet, Arena.net, Guild Wars, Guild Wars Factions, Factions, Guild Wars Nightfall, Nightfall, Guild Wars: Eye of the North, Guild Wars Eye of the North, Eye of the North, Guild Wars 2, and all associated logos and designs are trademarks or registered trademarks of NCsoft Corporation. All other trademarks are the property of their respective owners.">&copy; 2011 ArenaNet, Inc. All rights reserved.</span> <span class="divider-vertical" style="margin: 0px 5px;"></span> <span class="localized">web programming:</span> <a href="http://forum-de.guildwars2.com/members/Ignitas-9573">Ignitas</a></p>
 		</div>
 	</div>
 	
 	<script type="text/javascript">
-		  var _gaq = _gaq || [];
-		  _gaq.push(['_setAccount', 'UA-36021470-1']);
-		  _gaq.push(['_trackPageview']);
-		
-		  (function() {
-		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		  })();
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-36021470-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
 	</script>
-	
+
 	</body>
 </html>
