@@ -275,7 +275,7 @@
 				
 				var cookie=$.cookie('asura-chess');
 				if (cookie!=null){
-					$("#backselect").val(cookie.split('|')[0]);$("#backselect").change();
+					if ($('#map').css('position')=="absolute"){$("#backselect").val(cookie.split('|')[0]);$("#backselect").change();}
 					$("#textureselect").val(cookie.split('|')[1]);$("#textureselect").change();
 					$("#langselect").val(cookie.split('|')[2]);$("#langselect").change();
 				}
