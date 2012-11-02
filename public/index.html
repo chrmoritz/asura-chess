@@ -203,8 +203,8 @@
 						}
 					}
 					var rhp=Math.floor(hp+0.5);
-					$('#cell'+x+y).html('<div class="progress" style="margin: 5px 8px 0px;"><div class="bar bar-success" style="width:'+rhp+'%;"></div><div class="bar bar-danger" style="width:'+(100-rhp)+'%;"></div></div>');
-					$(".progress").height(Math.floor(50/s));
+					$('#cell'+x+y).html('<div class="progress" style="margin: '+(15/s)+'px 8px 0px;"><div class="bar bar-success" style="width:'+rhp+'%;"></div><div class="bar bar-danger" style="width:'+(100-rhp)+'%;"></div></div><b style="position:relative;top:-'+(22.9-s*1.2)+'px;color:white;font-size:'+(130-10*s)+'%">'+rhp+'%</b>');
+					$(".progress").height(Math.floor(46/s+3));
 				}
 				
 				function clearCell(x,y){
