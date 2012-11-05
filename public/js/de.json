@@ -21,5 +21,15 @@
 "Start new game ...": "Ein neues Spiel starten ...",
 "Game idea and concept art from": "Spielidee und Konzeptkunst",
 "web programming:": "Webentwicklung:",
-"map grid size:":"Spielfeldgröße:"
+"map grid size:":"Spielfeldgröße:",
+"Source code":"Quellcode",
+"Issue Tracker":"Fehler melden",
+"GW2-Forum-Thread":"Forum-Diskussion",
+" wins! Congratulation!":" gewinnt! Herzlichen Glückwunsch!",
+"You were defeated by ":"Du wurdest von einem ",
+"an easy":"einfachen",
+"a normal":"normalen",
+"an unbeatable":"unbesiegbaren",
+" bot :( Try it again!":" Bot bezwungen :( Versuch es noch einmal!",
+"Current player: ":"Aktueller Spieler: "
 }
