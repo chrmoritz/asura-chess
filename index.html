@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>Asura Chess by Ignitas</title>
+		<title class="localized">Asura Chess by Ignitas</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="description" content="Guild Wars2, GW2, Ausra Chess">
 		<meta name="author" content="Ignitas">
@@ -77,6 +77,16 @@
 			.form-actions{
 				bottom: 40px;
 				padding-top: 0px;
+			}
+			
+			@media (max-width: 1100px){
+				.navbar.navbar-fixed-bottom .nav > li > a{
+					font-size: 11px;
+					padding: 10px;
+				}
+				.navbar.navbar-fixed-bottom .divider-vertical{
+					margin: 0;
+				}
 			}
 			
 			@media (max-width: 1023px){
@@ -236,11 +246,11 @@
 				function victory(golem){
 					$('.gamebtn').hide();
 					if (golem===2 && game.bot>0){
-						$('#currentplayer').text('You were defeated by '+((game.bot===1)?'an easy':((game.bot===2)?'a normal':'an unbeatable'))+' bot! Try it again!');
+						$('#currentplayer').text(getLocal('You were defeated by ')+((game.bot===1)?getLocal('an easy'):((game.bot===2)?getLocal('a normal'):getLocal('an unbeatable')))+getLocal(' bot :( Try it again!'));
 						$('#currentplayer').css('color','red');
 					}
 					else{
-						$('#currentplayer').text('Golem '+golem+' wins! Congratulation!');
+						$('#currentplayer').text('Golem '+golem+getLocal(' wins! Congratulation!'));
 						$('#currentplayer').css('color','green');
 					}
 					$('.newgame').fadeIn();
@@ -265,7 +275,7 @@
 					clearTimeout(timeout);
 					$(".gamebtn").removeAttr("disabled");
 					$('.cell').css('background-position','0px 0px').html('');
-					$('#currentplayer').text('Current player: Golem 1');
+					$('#currentplayer').text(getLocal('Current player: ')+'Golem 1');
 					$('#currentplayer').css('color','blue');
 					game=new Game();
 					$('button.newgame').hide();
@@ -325,8 +335,9 @@
 					}
 				});
 
-				
+				var local;
 				function localize(data){
+					local=data;
 					$('.localized').each(function(){
 						var oldtext=($(this).data('oriloc')==null)?$(this).text():$(this).data('oriloc');
 						if (data[oldtext]!=null){
@@ -339,6 +350,11 @@
 							}
 						}
 					});
+				}
+				
+				function getLocal(string){
+					if (local==null) return string;
+					return local[string] || string;
 				}
 				
 				function Game(){
@@ -380,7 +396,7 @@
 					this.skip=function(){
 						$(".gamebtn").removeAttr("disabled");
 						this.turn=!this.turn;
-						$('#currentplayer').text('Current player: Golem '+(this.turn?'1':((this.bot===0)?'2':'2 (bot)')));
+						$('#currentplayer').text(getLocal('Current player: ')+'Golem '+(this.turn?'1':((this.bot===0)?'2':'2 (bot)')));
 						$('#currentplayer').css('color',this.turn?'blue':'red');
 						var bot=$('#usebot:checked').length===0?0:parseInt($('#botdif').val());//Check for Setting updates
 						if (this.bot!=bot){
@@ -620,7 +636,7 @@
 	</div>
 
 	<div class="form-actions navbar-fixed-bottom">
-		<h3 id="currentplayer" style="color: blue;text-align:center;">Current player: Golem 1</span></h3>
+		<h3 id="currentplayer" style="color: blue;text-align:center;"><span class="localized">Current player: </span>Golem 1</span></h3>
 		<button class="btn btn-large gamebtn localized" onclick="if (game.turn || game.bot===0){game.turnLeft();}">Turn left</button>
 		<button class="btn btn-primary btn-large gamebtn localized" onclick="if (game.turn || game.bot===0){game.moveForward();}">Move forward</button>
 		<button class="btn btn-large gamebtn localized" onclick="if (game.turn || game.bot===0){game.turnRight();}">Turn right</button>
@@ -632,16 +648,16 @@
 	<div class="navbar navbar-inverse navbar-fixed-bottom">
 		<div class="navbar-inner">
 			<ul class="nav pull-left" style="z-index:2;">
-				<li><a href="https://github.com/chrmoritz/asura-chess" title="Don't hesitate to contribute! ;)">Source code</a></li>
+				<li><a href="https://github.com/chrmoritz/asura-chess" title="Don't hesitate to contribute! ;)" class="localized">Source code</a></li>
 				<li class="divider-vertical"></li>
-				<li><a href="https://github.com/chrmoritz/asura-chess/issues">Issue Tracker</a></li>
+				<li><a href="https://github.com/chrmoritz/asura-chess/issues" class="localized">Issue Tracker</a></li>
 				<li class="divider-vertical"></li>
 			</ul>
 			<ul class="nav pull-right" style="z-index:2;">
 				<li class="divider-vertical"></li>
-				<li><a>Version: 0.2.1</a></li>
+				<li><a>v.0.2.2</a></li>
 				<li class="divider-vertical"></li>
-				<li><a href="https://forum-en.guildwars2.com/forum/community/fangen/Game-Asura-Chess-v-0-1" title="Don't hesitate to provide Feedback! ;)">GW2-Forum-Thread</a></li>
+				<li><a href="https://forum-en.guildwars2.com/forum/community/fangen/Game-Asura-Chess-v-0-1" title="Don't hesitate to provide Feedback! ;)" class="localized">GW2-Forum-Thread</a></li>
 			</ul>
 			<p class="navbar-text" style="text-align:center;font-size:80%;position:absolute;width:100%;z-index:1;"><span class="localized">Game idea and concept art from</span> <a href="http://www.guildwars2.com/">Guild Wars 2</a> <span title="&copy; 2011 ArenaNet, Inc. All rights reserved. NCsoft, the interlocking NC logo, ArenaNet, Arena.net, Guild Wars, Guild Wars Factions, Factions, Guild Wars Nightfall, Nightfall, Guild Wars: Eye of the North, Guild Wars Eye of the North, Eye of the North, Guild Wars 2, and all associated logos and designs are trademarks or registered trademarks of NCsoft Corporation. All other trademarks are the property of their respective owners.">&copy; 2011 ArenaNet, Inc. All rights reserved.</span> <span class="divider-vertical" style="margin: 0px 5px;"></span> <span class="localized">web programming:</span> <a href="http://forum-de.guildwars2.com/members/Ignitas-9573">Ignitas</a></p>
 		</div>
